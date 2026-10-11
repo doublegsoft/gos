@@ -1,7 +1,37 @@
+OBJECTS = loader.o kmain.o
+CC = gcc
+CFLAGS = -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
+				 -nostartfiles -nodefaultlibs -Wall -Wextra -Werror -c
+LDFLAGS = -T link.ld -melf_i386
+AS = nasm
+ASFLAGS = -f elf
 
-.PHONY: all
+all: kernel.elf
 
-hello:
-	nasm -fmacho64 test/hello.asm -o bin/hello.o
-	ld -macosx_version_min 10.7.0 -no_pie bin/hello.o -o bin/hello
-	rm -f bin/hello.o
+kernel.elf: $(OBJECTS)
+	ld $(LDFLAGS) $(OBJECTS) -o kernel.elf
+
+gos.iso: kernel.elf
+	cp kernel.elf iso/boot/kernel.elf
+	genisoimage -R \
+	-b boot/grub/stage2_eltorito \
+	-no-emul-boot \
+	-boot-load-size 4 \
+	-A os \
+	-input-charset utf8 \
+	-quiet \
+	-boot-info-table \
+	-o os.iso \
+	iso
+
+run: gos.iso
+	bochs -f bochsrc.txt -q
+
+%.o: %.c
+	$(CC) $(CFLAGS) $< -o $@
+
+%.o: %.s
+	$(AS) $(ASFLAGS) $< -o $@
+
+clean:
+	rm -rf *.o kernel.elf os.iso

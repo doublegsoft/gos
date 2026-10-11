@@ -28,7 +28,7 @@ _start:
   mov $stack_top, %esp
 
   /* 跳转进入 C 语言内核主逻辑 */
-  extern kernel_main
+  .extern kernel_main
   call kernel_main
 
   /* 内核返回后关闭中断并彻底挂起 CPU */
