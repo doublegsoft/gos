@@ -1,4 +1,7 @@
-# gos
+gos
+========
+
+Copyright (C) doublegsoft.open
 
 ### Compilation
 
